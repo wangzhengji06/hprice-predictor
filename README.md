@@ -1,187 +1,109 @@
-# 🏠 House Price Predictor – An MLOps Learning Project
+# 🧪 Project Spec – Simulate a Production-Grade ML System with Docker Compose
 
-Welcome to the **House Price Predictor** project! This is a real-world, end-to-end MLOps use case designed to help you master the art of building and operationalizing machine learning pipelines.
+You are part of an **AI Platform Engineering team** at a tech company that builds internal tools for machine learning, data science, and AI product teams.
 
-You'll start from raw data and move through data preprocessing, feature engineering, experimentation, model tracking with MLflow, and optionally using Jupyter for exploration – all while applying industry-grade tooling.
+Your mission?
 
-> 🚀 **Want to master MLOps from scratch?**  
-Check out the [MLOps Bootcamp at School of DevOps](https://schoolofdevops.com) to level up your skills.
+> ⚙️ **Assemble a complete, working ML application stack** using Docker Compose to simulate what a real production-grade system looks like — in a local or test environment.
+
+This will be used by:
+
+* **ML Engineers** to validate model APIs
+
+* **AI Engineers** to experiment with pipelines and workflows
+
+* **Data Scientists** to test models end-to-end
+
+* **QA and DevOps teams** to run pre-production validation
 
 ---
 
-## 📦 Project Structure
+## 🧱 The Use Case
+
+You’re building a **House Price Prediction App** for internal use. The model predicts real estate prices based on features like size, location, and number of rooms. It needs to be:
+
+* Trained reproducibly
+
+* Served through an API
+
+* Visualized through a web UI
+
+* Logged and tracked for every experiment
+
+---
+
+## 🛠️ What You’ll Work With
+
+The Dockerfiles are already written. Your job is to **tie everything together** using Docker Compose to create a **reproducible, containerized development environment** that mimics a production system.
+
+|  Component |  Purpose |  Technology |  Container? |
+|---|---|---|---|
+|  Training Pipeline |  Generate model artifacts |  Python Script |  No |
+|  Experiment Tracker |  Log metrics, parameters, models |  MLflow |  ✅ (public image) |
+|  Model API |  Serve predictions via REST |  FastAPI |  ✅ (Dockerfile provided) |
+|  Frontend UI |  Collect input, display predictions |  Streamlit |  ✅ (Dockerfile provided) |
+|  Orchestration |  Tie everything together |  Docker Compose |  ✅ |
+---
+
+## 🎯 Your Mission
+
+1. **Run the training pipeline** to generate the model and preprocessor
+
+2. **Use Docker Compose** to define and launch a local ML app stack
+
+3. **Validate service-to-service communication**
+
+4. **Simulate what an integrated ML system looks like before deploying to Kubernetes**
+
+⠀
+---
+
+## 📂 Project Structure
 
 ```
 house-price-predictor/
-├── configs/                # YAML-based configuration for models
-├── data/                   # Raw and processed datasets
-├── deployment/
-│   └── mlflow/             # Docker Compose setup for MLflow
-├── models/                 # Trained models and preprocessors
-├── notebooks/              # Optional Jupyter notebooks for experimentation
-├── src/
-│   ├── data/               # Data cleaning and preprocessing scripts
-│   ├── features/           # Feature engineering pipeline
-│   ├── models/             # Model training and evaluation
-├── requirements.txt        # Python dependencies
-└── README.md               # You’re here!
+├── run_pipeline.sh                # Generates model artifacts
+├── Dockerfile                     # FastAPI Dockerfile
+├── streamlit_app/
+│   ├── Dockerfile                 # Streamlit Dockerfile
+│   └── app.py
+└── docker-compose.yml             # You will create this
 ```
 
 ---
 
-## 🛠️ Setting up Learning/Development Environment
+## 📌 What You’ll Build
 
-To begin, ensure the following tools are installed on your system:
+Create a `docker-compose.yml` with the following services:
 
-- [Python 3.11](https://www.python.org/downloads/)
-- [Git](https://git-scm.com/)
-- [Visual Studio Code](https://code.visualstudio.com/) or your preferred editor
-- [UV – Python package and environment manager](https://github.com/astral-sh/uv)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) **or** [Podman Desktop](https://podman-desktop.io/)
-
----
-
-## 🚀 Preparing Your Environment
-
-1. **Fork this repo** on GitHub.
-
-2. **Clone your forked copy:**
-
-   ```bash
-   # Replace xxxxxx with your GitHub username or org
-   git clone https://github.com/xxxxxx/house-price-predictor.git
-   cd house-price-predictor
-   ```
-
-3. **Setup Python Virtual Environment using UV:**
-
-   ```bash
-   uv venv --python python3.11
-   source .venv/bin/activate
-   ```
-
-4. **Install dependencies:**
-
-   ```bash
-   uv pip install -r requirements.txt
-   ```
+|  Service |  Build Context/Image |  Port |  Depends On |
+|---|---|---|---|
+|  `mlflow` |  `ghcr.io/mlflow/mlflow:latest` |  5555 |  - |  
+|  `fastapi` |  `.` using root `Dockerfile` |  8000 |  mlflow |  
+|  `streamlit` |  `./streamlit_app` Dockerfile |  8501 |  fastapi |  
+Use DNS-based service discovery: `streamlit` will call `fastapi` via `http://fastapi:8000`.
 
 ---
 
-## 📊 Setup MLflow for Experiment Tracking
+## ✅ Final Validation Checklist
 
-To track experiments and model runs:
+|  Milestone |  Status |
+|---|---|
+|  Model training pipeline runs and saves artifacts |  [ ] |
+|  MLflow UI accessible at [http://localhost:5555](http://localhost:5555/) |  [ ] |  
+|  FastAPI available at [http://localhost:8000/docs](http://localhost:8000/docs) |  [ ] |  
+|  Streamlit available at [http://localhost:8501](http://localhost:8501/) |  [ ] |  
+|  Streamlit fetches predictions from FastAPI successfully |  [ ] |
+|  All services run together with `docker-compose up` |  [ ] |  
+---
 
-```bash
-cd deployment/mlflow
-docker compose -f mlflow-docker-compose.yml up -d
-docker compose ps
-```
+## 🚀 What You'll Learn (Real-World MLOps Skills)
 
-> 🐧 **Using Podman?** Use this instead:
+* How to simulate production ML systems using containerized services
 
-```bash
-podman compose -f mlflow-docker-compose.yml up -d
-podman compose ps
-```
+* How to tie together training, serving, tracking, and UI in one reproducible dev stack
 
-Access the MLflow UI at [http://localhost:5555](http://localhost:5555)
+* How different roles (ML, AI, Data, DevOps, QA) work on the same ML system using Compose
 
 ---
 
-## 📒 Using JupyterLab (Optional)
-
-If you prefer an interactive experience, launch JupyterLab with:
-
-```bash
-uv python -m jupyterlab
-# or
-python -m jupyterlab
-```
-
----
-
-## 🔁 Model Workflow
-
-### 🧹 Step 1: Data Processing
-
-Clean and preprocess the raw housing dataset:
-
-```bash
-python src/data/run_processing.py   --input data/raw/house_data.csv   --output data/processed/cleaned_house_data.csv
-```
-
----
-
-### 🧠 Step 2: Feature Engineering
-
-Apply transformations and generate features:
-
-```bash
-python src/features/engineer.py   --input data/processed/cleaned_house_data.csv   --output data/processed/featured_house_data.csv   --preprocessor models/trained/preprocessor.pkl
-```
-
----
-
-### 📈 Step 3: Modeling & Experimentation
-
-Train your model and log everything to MLflow:
-
-```bash
-python src/models/train_model.py   --config configs/model_config.yaml   --data data/processed/featured_house_data.csv   --models-dir models   --mlflow-tracking-uri http://localhost:5555
-```
-
----
-
-
-## Building FastAPI and Streamlit 
-
-The code for both the apps are available in `src/api` and `streamlit_app` already. To build and launch these apps 
-
-  * Add a  `Dockerfile` in the root of the source code for building FastAPI  
-  * Add `streamlit_app/Dockerfile` to package and build the Streamlit app  
-  * Add `docker-compose.yaml` in the root path to launch both these apps. be sure to provide `API_URL=http://fastapi:8000` in the streamlit app's environment. 
-
-
-Once you have launched both the apps, you should be able to access streamlit web ui and make predictions. 
-
-You could also test predictions with FastAPI directly using 
-
-```
-curl -X POST "http://localhost:8000/predict" \
--H "Content-Type: application/json" \
--d '{
-  "sqft": 1500,
-  "bedrooms": 3,
-  "bathrooms": 2,
-  "location": "suburban",
-  "year_built": 2000,
-  "condition": fair
-}'
-
-```
-
-Be sure to replace `http://localhost:8000/predict` with actual endpoint based on where its running. 
-
-
-## 🧠 Learn More About MLOps
-
-This project is part of the [**MLOps Bootcamp**](https://schoolofdevops.com) at School of DevOps, where you'll learn how to:
-
-- Build and track ML pipelines
-- Containerize and deploy models
-- Automate training workflows using GitHub Actions or Argo Workflows
-- Apply DevOps principles to Machine Learning systems
-
-🔗 [Get Started with MLOps →](https://schoolofdevops.com)
-
----
-
-## 🤝 Contributing
-
-We welcome contributions, issues, and suggestions to make this project even better. Feel free to fork, explore, and raise PRs!
-
----
-
-Happy Learning!  
-— Team **School of DevOps**
