@@ -16,6 +16,18 @@ This will be used by:
 
 * **QA and DevOps teams** to run pre-production validation
 
+🎯 Project Goal - Why build this Docker Compose Stack ? 
+
+"At RealOps Labs, we believe that every ML engineer, data scientist, and AI platform builder should be able to spin up a complete ML system — not in weeks, not in days, but in minutes.
+
+This is where Docker Compose comes in.
+
+Your mission? Build a local-first, fully containerized development stack that mirrors what you'd eventually run in production. You’ll integrate model training, model serving, experiment tracking, and a frontend — all running together, all reproducible, all testable — using a single docker-compose up command.
+
+In the real world, this isn’t just a dev exercise — it’s how high-performing teams test workflows, share prototypes, run integration checks, and debug multi-service ML apps before pushing to staging or Kubernetes.
+
+So forget copy-pasting notebooks or chasing ‘it works on my machine’ bugs. With Docker Compose, you’re laying the groundwork for repeatable, reliable ML systems — the kind that real AI platforms are built on."
+
 ---
 
 ## 🧱 The Use Case
