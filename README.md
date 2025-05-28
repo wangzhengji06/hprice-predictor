@@ -151,4 +151,3 @@ Using Docker Compose this way lets you:
 
 You’re not just containerizing — you’re simulating production architecture in a controlled, local setup.
 
-#courses/docker-aiml/lab
