@@ -1,73 +1,74 @@
-# 🧪 Project Spec – Simulate a Production-Grade ML System with Docker Compose
+## 🧪 Project Spec – Simulate a Production-Grade ML System with Docker Compose
 
-You are part of an **AI Platform Engineering team** at a tech company that builds internal tools for machine learning, data science, and AI product teams.
+## 🎯 Project Goal
 
-Your mission?
+As an MLOps or AI/ML Engineer on the **AI Platform Engineering team**, your mission is to simulate a real-world ML application environment by automating its deployment using **Docker Compose**.
 
-> ⚙️ **Assemble a complete, working ML application stack** using Docker Compose to simulate what a real production-grade system looks like — in a local or test environment.
+You will create a local dev/test setup that combines:
 
-This will be used by:
+* ML model training and tracking (with MLflow)
 
-* **ML Engineers** to validate model APIs
+* Model serving (with FastAPI)
 
-* **AI Engineers** to experiment with pipelines and workflows
+* User interaction (with Streamlit)
 
-* **Data Scientists** to test models end-to-end
-
-* **QA and DevOps teams** to run pre-production validation
-
-🎯 Project Goal - Why build this Docker Compose Stack ? 
-
-"At RealOps Labs, we believe that every ML engineer, data scientist, and AI platform builder should be able to spin up a complete ML system — not in weeks, not in days, but in minutes.
-
-This is where Docker Compose comes in.
-
-Your mission? Build a local-first, fully containerized development stack that mirrors what you'd eventually run in production. You’ll integrate model training, model serving, experiment tracking, and a frontend — all running together, all reproducible, all testable — using a single docker-compose up command.
-
-In the real world, this isn’t just a dev exercise — it’s how high-performing teams test workflows, share prototypes, run integration checks, and debug multi-service ML apps before pushing to staging or Kubernetes.
-
-So forget copy-pasting notebooks or chasing ‘it works on my machine’ bugs. With Docker Compose, you’re laying the groundwork for repeatable, reliable ML systems — the kind that real AI platforms are built on."
+This kind of environment is used by real teams to **test integration, debug workflows, and enable reproducibility** — before handing it off to production infrastructure like Kubernetes.
 
 ---
 
-## 🧱 The Use Case
+## ⚙️ What We’re Automating
 
-You’re building a **House Price Prediction App** for internal use. The model predicts real estate prices based on features like size, location, and number of rooms. It needs to be:
+In a non-Compose setup, you’d be spinning up each component manually using long `docker run` commands. Here's what that looks like:
 
-* Trained reproducibly
+### 🔹 MLflow Tracking Server
 
-* Served through an API
+```
+docker run -d --name mlflow -p 5555:5000 \
+  ghcr.io/mlflow/mlflow:latest \
+  mlflow server --host 0.0.0.0 \
+```
 
-* Visualized through a web UI
+### 🔹 FastAPI Inference Server
 
-* Logged and tracked for every experiment
+```
+docker build -t fastapi-app .
+docker run -d --name fastapi -p 8000:8000 
+```
+
+### 🔹 Streamlit Frontend
+
+```
+docker build -t streamlit-app ./streamlit_app
+docker run -d --name streamlit -p 8501:8501 \
+  --env API_URL=http://fastapi:8000 \
+  --link fastapi streamlit-app
+```
+
+Running and linking these services manually is tedious, error-prone, and non-reproducible.
 
 ---
 
-## 🛠️ What You’ll Work With
+## 🐳 What You’ll Do Instead
 
-The Dockerfiles are already written. Your job is to **tie everything together** using Docker Compose to create a **reproducible, containerized development environment** that mimics a production system.
+You’ll use **Docker Compose** to automate all of the above by writing a single `docker-compose.yml` file. This will:
 
-|  Component |  Purpose |  Technology |  Container? |
+* Build and launch all three services
+
+* Set up internal networking so services can find each other by name (e.g., `http://fastapi:8000`)
+
+* Automatically manage service dependencies
+
+* Enable consistent and reproducible environments across your team
+
+---
+
+## 🧱 Stack Overview
+
+|  Service |  Build Context/Image |  Port |  Depends On |
 |---|---|---|---|
-|  Training Pipeline |  Generate model artifacts |  Python Script |  No |
-|  Experiment Tracker |  Log metrics, parameters, models |  MLflow |  ✅ (public image) |
-|  Model API |  Serve predictions via REST |  FastAPI |  ✅ (Dockerfile provided) |
-|  Frontend UI |  Collect input, display predictions |  Streamlit |  ✅ (Dockerfile provided) |
-|  Orchestration |  Tie everything together |  Docker Compose |  ✅ |
----
-
-## 🎯 Your Mission
-
-1. **Run the training pipeline** to generate the model and preprocessor
-
-2. **Use Docker Compose** to define and launch a local ML app stack
-
-3. **Validate service-to-service communication**
-
-4. **Simulate what an integrated ML system looks like before deploying to Kubernetes**
-
-⠀
+|  `mlflow` |  `ghcr.io/mlflow/mlflow:latest` |  5555 |  - |  
+|  `fastapi` |  `.` (uses root `Dockerfile`) |  8000 |  mlflow |  
+|  `streamlit` |  `./streamlit_app` (Dockerfile) |  8501 |  fastapi |  
 ---
 
 ## 📂 Project Structure
@@ -75,47 +76,79 @@ The Dockerfiles are already written. Your job is to **tie everything together** 
 ```
 house-price-predictor/
 ├── run_pipeline.sh                # Generates model artifacts
-├── Dockerfile                     # FastAPI Dockerfile
+├── Dockerfile                     # FastAPI app
 ├── streamlit_app/
-│   ├── Dockerfile                 # Streamlit Dockerfile
+│   ├── Dockerfile                 # Streamlit app
 │   └── app.py
 └── docker-compose.yml             # You will create this
 ```
 
 ---
 
-## 📌 What You’ll Build
+## 🔄 Workflow
 
-Create a `docker-compose.yml` with the following services:
+### Step 1: Generate Model Artifacts
 
-|  Service |  Build Context/Image |  Port |  Depends On |
-|---|---|---|---|
-|  `mlflow` |  `ghcr.io/mlflow/mlflow:latest` |  5555 |  - |  
-|  `fastapi` |  `.` using root `Dockerfile` |  8000 |  mlflow |  
-|  `streamlit` |  `./streamlit_app` Dockerfile |  8501 |  fastapi |  
-Use DNS-based service discovery: `streamlit` will call `fastapi` via `http://fastapi:8000`.
+Run the provided training script:
+
+```
+./run_pipeline.sh
+```
+
+This will:
+
+* Clean raw data
+
+* Engineer features
+
+* Train a model and preprocessor
+
+* Log the run to MLflow (if it's running)
+
+* Save model files under `models/`
 
 ---
 
-## ✅ Final Validation Checklist
+### Step 2: Create Docker Compose File
+
+Write a `docker-compose.yml` that:
+
+* Builds the FastAPI and Streamlit images from the existing Dockerfiles
+
+* Uses the public MLflow image
+
+* Maps the appropriate ports
+
+* Connects the services using internal DNS (`fastapi`, `mlflow`)
+
+* Passes `API_URL=http://fastapi:8000` as an environment variable to the Streamlit app
+
+---
+
+### ✅ Validation Checklist
 
 |  Milestone |  Status |
 |---|---|
-|  Model training pipeline runs and saves artifacts |  [ ] |
+|  `run_pipeline.sh` runs successfully and generates artifacts |  [ ] |  
 |  MLflow UI accessible at [http://localhost:5555](http://localhost:5555/) |  [ ] |  
-|  FastAPI available at [http://localhost:8000/docs](http://localhost:8000/docs) |  [ ] |  
-|  Streamlit available at [http://localhost:8501](http://localhost:8501/) |  [ ] |  
-|  Streamlit fetches predictions from FastAPI successfully |  [ ] |
-|  All services run together with `docker-compose up` |  [ ] |  
+|  FastAPI docs available at [http://localhost:8000/docs](http://localhost:8000/docs) |  [ ] |  
+|  Streamlit UI loads at [http://localhost:8501](http://localhost:8501/) |  [ ] |  
+|  Streamlit connects to FastAPI and returns predictions |  [ ] |
+|  All services run together via `docker-compose up` |  [ ] |  
 ---
 
-## 🚀 What You'll Learn (Real-World MLOps Skills)
+## 🚀 Why This Matters
 
-* How to simulate production ML systems using containerized services
+Using Docker Compose this way lets you:
 
-* How to tie together training, serving, tracking, and UI in one reproducible dev stack
+* Create consistent dev/test environments
 
-* How different roles (ML, AI, Data, DevOps, QA) work on the same ML system using Compose
+* Share portable ML apps with teammates
 
----
+* Validate service integration before scaling to Kubernetes
 
+* Work more like a real AI/ML Platform Engineering team
+
+You’re not just containerizing — you’re simulating production architecture in a controlled, local setup.
+
+#courses/docker-aiml/lab
